@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hospital-management-crm.onrender.com/api';
 
 const getHeaders = () => {
   const token = localStorage.getItem('access_token');
