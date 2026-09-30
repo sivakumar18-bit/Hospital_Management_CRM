@@ -19,21 +19,38 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
 
 jwt = JWTManager(app)
 
-# Database Configuration
+# ==================== DATABASE CONFIGURATION ====================
+
+CA_CERT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'aiven-ca.pem'
+)
+
 db_config = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'hospital_crm'),
-    'port': int(os.getenv('DB_PORT', 3306)),
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'port': int(os.getenv('DB_PORT', 18174)),
+
+    # Aiven MySQL SSL
+    'ssl_ca': CA_CERT_PATH,
+    'ssl_verify_cert': True,
+    'ssl_verify_identity': True,
 }
+
 
 def get_db_connection():
     try:
         connection = mysql.connector.connect(**db_config)
+
+        if connection.is_connected():
+            print("✅ Connected to Aiven MySQL")
+
         return connection
+
     except Error as e:
-        print(f"Error while connecting to MySQL: {e}")
+        print(f"❌ Error while connecting to Aiven MySQL: {e}")
         return None
 
 # ==================== ADMIN AUTHENTICATION ====================
@@ -334,7 +351,19 @@ def get_dashboard_stats():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'ok'}), 200
+    connection = get_db_connection()
+
+    if connection:
+        connection.close()
+        return jsonify({
+            'status': 'ok',
+            'database': 'connected'
+        }), 200
+
+    return jsonify({
+        'status': 'error',
+        'database': 'not connected'
+    }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
