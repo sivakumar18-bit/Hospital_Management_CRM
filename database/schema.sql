@@ -1,6 +1,4 @@
 -- Create Database
-CREATE DATABASE IF NOT EXISTS hospital_crm;
-USE hospital_crm;
 ALTER TABLE patients ADD COLUMN reason_for_visit TEXT AFTER allergies;
 
 -- Admin Table
@@ -27,6 +25,7 @@ CREATE TABLE IF NOT EXISTS patients (
     emergency_status ENUM('normal', 'emergency') DEFAULT 'normal',
     blood_group VARCHAR(5),
     allergies TEXT,
+    reason_for_visit TEXT,
     medical_history TEXT,
     emergency_contact_name VARCHAR(100),
     emergency_contact_phone VARCHAR(20),

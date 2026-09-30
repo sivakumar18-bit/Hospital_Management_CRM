@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=os.getenv('FRONTEND_URL', '*'))
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
@@ -24,7 +24,8 @@ db_config = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'user': os.getenv('DB_USER', 'root'),
     'password': os.getenv('DB_PASSWORD', ''),
-    'database': os.getenv('DB_NAME', 'hospital_crm')
+    'database': os.getenv('DB_NAME', 'hospital_crm'),
+    'port': int(os.getenv('DB_PORT', 3306)),
 }
 
 def get_db_connection():
@@ -51,6 +52,9 @@ def register_admin():
 
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT COUNT(*) AS c FROM admins")
+        if cursor.fetchone()['c'] > 0:
+            return jsonify({'message': 'Registration is closed'}), 403
 
         # Check if admin exists
         cursor.execute("SELECT * FROM admins WHERE email = %s", (email,))
