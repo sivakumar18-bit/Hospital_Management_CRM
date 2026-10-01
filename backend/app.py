@@ -771,6 +771,15 @@ def health_check():
         'database': 'not connected'
     }), 500
 
+# ==================== PING CHECK ====================
+
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    return jsonify({
+        'status': 'ok',
+        'message': 'Backend is running'
+    })
+
 
 # ==================== LOCAL DEVELOPMENT ====================
 
