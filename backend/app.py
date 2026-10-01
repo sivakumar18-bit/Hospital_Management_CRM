@@ -13,6 +13,7 @@ import mysql.connector
 from mysql.connector import Error, pooling
 
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -754,17 +755,33 @@ def get_dashboard_stats():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
+    start_time = time.perf_counter()
 
+    connection_start = time.perf_counter()
     connection = get_db_connection()
+    connection_time = time.perf_counter() - connection_start
+
+    total_time = time.perf_counter() - start_time
 
     if connection:
-
         connection.close()
+
+        print(
+            f"⏱️ /api/health: "
+            f"connection={connection_time:.3f}s "
+            f"total={total_time:.3f}s"
+        )
 
         return jsonify({
             'status': 'ok',
             'database': 'connected'
         }), 200
+
+    print(
+        f"⏱️ /api/health: "
+        f"connection={connection_time:.3f}s "
+        f"total={total_time:.3f}s"
+    )
 
     return jsonify({
         'status': 'error',
